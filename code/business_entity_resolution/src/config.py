@@ -22,7 +22,7 @@ class Config:
     # Feature Engineering (Khushi's module)
     USE_TFIDF: bool = True
     CHAR_NGRAM_RANGE: tuple = (3, 3)
-    TFIDF_MAX_FEATURES: int = 50000
+    TFIDF_MAX_FEATURES: int = 512
 
     # ML Model & Evaluation (Akshat's module)
     SEED: int = 42
