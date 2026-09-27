@@ -25,12 +25,14 @@ class CandidateGenerator:
     def _prepare_records(self, df: pd.DataFrame) -> Dict[str, dict]:
         """Preprocesses all records and extracts tokens & numbers."""
         records = {}
-        for _, row in df.iterrows():
-            eid = str(row["entity_id"]).strip()
-            name_raw = str(row.get("business_name", ""))
-            addr_raw = str(row.get("business_address", ""))
-            country = str(row.get("country", "")).strip().upper()
+        
+        eids = df["entity_id"].astype(str).tolist()
+        names = df.get("business_name", pd.Series([""] * len(df))).fillna("").astype(str).tolist()
+        addrs = df.get("business_address", pd.Series([""] * len(df))).fillna("").astype(str).tolist()
+        countries = df.get("country", pd.Series([""] * len(df))).fillna("").astype(str).str.strip().str.upper().tolist()
 
+        for eid, name_raw, addr_raw, country in zip(eids, names, addrs, countries):
+            eid = eid.strip()
             clean_name, name_tokens = clean_business_name(name_raw)
             clean_addr, addr_tokens, addr_numbers = clean_address(addr_raw)
 
@@ -70,8 +72,10 @@ class CandidateGenerator:
         s2_records = self._prepare_records(df_s2)
         s3_records = self._prepare_records(df_s3)
 
-        # Merge S2 and S3 target records
-        target_records = {**s2_records, **s3_records}
+        # Merge S2 and S3 target records efficiently
+        target_records = s2_records
+        target_records.update(s3_records)
+        del s3_records
 
         # 1. Country Partitioning
         targets_by_country: Dict[str, List[str]] = defaultdict(list)
