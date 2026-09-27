@@ -45,9 +45,12 @@ class EntityResolutionPipeline:
         gt_path = os.path.join(data_dir, f"{prefix}_ground_truth.tsv")
         if os.path.exists(gt_path):
             df_gt = pd.read_csv(gt_path, sep="\t", dtype=str).fillna("")
-            for _, row in df_gt.iterrows():
-                s1_id = str(row["source1_entity_id"]).strip()
-                matches_str = str(row.get("matched_entity_ids", "")).strip()
+            s1_ids = df_gt["source1_entity_id"].astype(str).tolist()
+            matches_strs = df_gt.get("matched_entity_ids", pd.Series([""] * len(df_gt))).fillna("").astype(str).tolist()
+            
+            for s1_id_raw, matches_str_raw in zip(s1_ids, matches_strs):
+                s1_id = s1_id_raw.strip()
+                matches_str = matches_str_raw.strip()
                 if matches_str:
                     matched_ids = {m.strip() for m in matches_str.split(",") if m.strip()}
                 else:
